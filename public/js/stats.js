@@ -17,7 +17,7 @@
       var ctx = chartInstance.ctx;
 
       markers.forEach(function (marker) {
-        var x = xScale.getPixelForValue(marker.t);
+        var x = xScale.getPixelForValue(new Date(marker.t).getTime());
         if (x < xScale.left || x > xScale.right) return;
         ctx.save();
         ctx.strokeStyle = '#d64545';
@@ -43,22 +43,18 @@
       var data = await apiRequest('/editor/api/stats/articles/' + articleId);
       messageEl.textContent = 'סה"כ צפיות: ' + data.totalViews;
 
-      var labels = data.series.map(function (p) {
-        return new Date(p.t);
-      });
-      var counts = data.series.map(function (p) {
-        return p.count;
+      var points = data.series.map(function (p) {
+        return { x: new Date(p.t).getTime(), y: p.count };
       });
 
       if (chart) chart.destroy();
       chart = new Chart(canvas.getContext('2d'), {
         type: 'line',
         data: {
-          labels: labels,
           datasets: [
             {
               label: 'צפיות לשעה',
-              data: counts,
+              data: points,
               borderColor: '#2b6cb0',
               backgroundColor: 'rgba(43,108,176,0.15)',
               tension: 0.25,
@@ -71,8 +67,17 @@
           responsive: true,
           scales: {
             x: {
-              type: 'time',
-              time: { unit: 'hour' },
+              type: 'linear',
+              ticks: {
+                callback: function (value) {
+                  return new Date(value).toLocaleString('he-IL', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
+                },
+              },
               title: { display: true, text: 'זמן' },
             },
             y: {
