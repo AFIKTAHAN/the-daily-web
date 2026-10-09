@@ -6,12 +6,12 @@
 // "הרשאות המשתמש ייקבעו לפי המשתמש המזוהה ולא לפי מידע שניתן לשנות ידנית
 // בדפדפן". גם אם מישהו יסתיר כפתור ב-CSS/JS, השרת עדיין יחסום את הבקשה.
 
-const { AppError } = require('./errorHandler');
+const { AppError, isApiRequest } = require('./errorHandler');
 const { ROLES } = require('../utils/constants');
 
 function requireLogin(req, res, next) {
   if (!req.session.user) {
-    if (req.originalUrl.startsWith('/api/')) {
+    if (isApiRequest(req)) {
       return next(new AppError('יש להתחבר כדי לבצע פעולה זו', 401));
     }
     return res.redirect('/login?next=' + encodeURIComponent(req.originalUrl));
@@ -22,7 +22,7 @@ function requireLogin(req, res, next) {
 function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.session.user) {
-      if (req.originalUrl.startsWith('/api/')) {
+      if (isApiRequest(req)) {
         return next(new AppError('יש להתחבר כדי לבצע פעולה זו', 401));
       }
       return res.redirect('/login?next=' + encodeURIComponent(req.originalUrl));

@@ -40,6 +40,39 @@
   }
 })();
 
+// גיבוי לתמונות כתבות שנכשלו בטעינה. התמונות של נתוני הדמו מגיעות משירות חיצוני
+// (LoremFlickr), ושירות כזה יכול להיות איטי, חסום ברשת או למטה. במקום אייקון
+// "תמונה שבורה" מנסים תחילה מקור חלופי (picsum.photos, לפי אותו מזהה), ואם גם
+// הוא נכשל - תמונת ה-placeholder המקומית שנמצאת בפרויקט עצמו ולכן תמיד זמינה.
+// האירוע error לא "בועט" למעלה בעץ ה-DOM, לכן מאזינים בשלב ה-capture (true) -
+// כך זה עובד גם על כרטיסים שנוספים דינמית בגלילה האינסופית.
+function imageFallback(img) {
+  if (!img.classList.contains('feed-card-image') && !img.classList.contains('article-image')) return;
+  var step = parseInt(img.getAttribute('data-fallback-step') || '0', 10);
+  img.setAttribute('data-fallback-step', String(step + 1));
+  if (step === 0) {
+    var seed = 0;
+    var src = img.getAttribute('src') || '';
+    for (var i = 0; i < src.length; i += 1) seed = (seed * 31 + src.charCodeAt(i)) >>> 0;
+    img.src = 'https://picsum.photos/seed/dw' + (seed % 10000) + '/800/450';
+  } else if (step === 1) {
+    img.src = '/img/placeholder.svg';
+  }
+}
+
+document.addEventListener(
+  'error',
+  function (e) {
+    if (e.target && e.target.tagName === 'IMG') imageFallback(e.target);
+  },
+  true
+);
+
+// תמונה שכבר נכשלה לפני שהסקריפט הזה נטען (למשל תמונת הכתבה שמרונדרת בשרת)
+document.querySelectorAll('img.article-image').forEach(function (img) {
+  if (img.complete && img.naturalWidth === 0) imageFallback(img);
+});
+
 // עזר קטן לכל שאר קבצי ה-JS: fetch עם JSON, וזריקת שגיאה קריאה אם הבקשה נכשלה
 async function apiRequest(url, options) {
   var response = await fetch(url, Object.assign({ headers: { 'Content-Type': 'application/json' } }, options));

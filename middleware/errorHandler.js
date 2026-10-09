@@ -3,6 +3,12 @@ const logger = require('../utils/logger');
 
 // שגיאה מותאמת אישית עם קוד סטטוס HTTP, כדי שנוכל לזרוק new AppError('...', 404)
 // מכל מקום בקוד ולתת ל-Express Error Handler הגלובלי לטפל בה במקום אחד.
+// בקשת API היא כל כתובת שמכילה את הקטע /api/ - כולל /editor/api/... ו-/reporter/api/...
+// (בדיקה ב-startsWith בלבד פספסה אותן, והלקוח קיבל עמוד HTML במקום JSON עם הודעת השגיאה).
+function isApiRequest(req) {
+  return req.originalUrl.split('?')[0].includes('/api/');
+}
+
 class AppError extends Error {
   constructor(message, statusCode = 500) {
     super(message);
@@ -31,7 +37,7 @@ function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-va
     logger.warn(message, { path: req.originalUrl, method: req.method });
   }
 
-  if (req.originalUrl.startsWith('/api/')) {
+  if (isApiRequest(req)) {
     return res.status(statusCode).json({ success: false, message });
   }
 
@@ -43,4 +49,4 @@ function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-va
   });
 }
 
-module.exports = { AppError, asyncHandler, errorHandler };
+module.exports = { AppError, asyncHandler, errorHandler, isApiRequest };
