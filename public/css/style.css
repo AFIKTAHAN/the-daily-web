@@ -290,17 +290,14 @@ h1, h2, h3 {
   min-width: 0;
 }
 
+.article-content {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .sidebar {
   width: 290px;
   flex-shrink: 0;
-}
-
-.page-article .article-layout {
-  flex-wrap: wrap;
-}
-.page-article .article-full,
-.page-article .comments-section {
-  flex-basis: 100%;
 }
 
 /* ---------- Feed controls ---------- */
@@ -1050,7 +1047,8 @@ h1, h2, h3 {
 
 /* ---------- Responsive breakpoints ---------- */
 @media (max-width: 900px) {
-  .home-layout {
+  .home-layout,
+  .article-layout {
     flex-direction: column;
   }
   .sidebar {
