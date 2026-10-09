@@ -50,6 +50,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(
+  '/vendor/chart.js',
+  express.static(path.join(__dirname, 'node_modules/chart.js/dist'))
+);
 
 // session מבוסס MongoDB (connect-mongo): כך אם השרת עושה restart, ה-session
 // עדיין קיים במסד הנתונים ומשתמש שכבר התחבר לא יצטרך להתחבר מחדש - בדיוק
